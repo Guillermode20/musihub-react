@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardFooter } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { authService } from "../lib/appwrite";
 
 export default function Register() {
     const [name, setName] = useState("");
@@ -11,13 +12,17 @@ export default function Register() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+    const [generalError, setGeneralError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const validateEmail = (email: string) => {
         return /\S+@\S+\.\S+/.test(email);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setGeneralError(null);
         const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
 
         if (!validateEmail(email)) {
@@ -35,8 +40,16 @@ export default function Register() {
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
-            // Proceed with registration logic
-            console.log("Registering:", { name, email, password });
+            setLoading(true);
+            try {
+                await authService.register(email, password, name);
+                navigate("/login");
+            } catch (error: any) {
+                console.error("Registration error:", error);
+                setGeneralError(error?.message || "Registration failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -48,6 +61,9 @@ export default function Register() {
                         <h2 className="text-2xl font-bold text-center">Create an Account</h2>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        {generalError && (
+                            <p className="text-red-500 text-center">{generalError}</p>
+                        )}
                         <div className="space-y-2">
                             <Label htmlFor="name">Name</Label>
                             <Input
@@ -93,7 +109,9 @@ export default function Register() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-2">
-                        <Button type="submit" className="w-full">Register</Button>
+                        <Button type="submit" className="w-full" disabled={loading}>
+                            {loading ? "Registering..." : "Register"}
+                        </Button>
                         <Button asChild variant="outline" className="w-full">
                             <Link to="/login">Login Instead</Link>
                         </Button>

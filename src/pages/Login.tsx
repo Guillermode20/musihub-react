@@ -1,21 +1,30 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardFooter } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { authService } from "../lib/appwrite";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+    const [generalError, setGeneralError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const validateEmail = (email: string) => {
-        return /\S+@\S+\.\S+/.test(email);
+        const emailRegex = /\S+@\S+\.\S+/;
+        const isValidFormat = emailRegex.test(email);
+        const isValidLength = email.length <= 36;
+        const startsWithSpecialChar = /^[^a-zA-Z0-9]/.test(email);
+        return isValidFormat && isValidLength && !startsWithSpecialChar;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setGeneralError(null);
         const newErrors: { email?: string; password?: string } = {};
 
         if (!validateEmail(email)) {
@@ -29,8 +38,16 @@ export default function Login() {
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
-            // Proceed with login logic
-            console.log("Logging in:", { email, password });
+            setLoading(true);
+            try {
+                await authService.login(email, password);
+                navigate("/dashboard");
+            } catch (error: any) {
+                console.error("Login error:", error);
+                setGeneralError(error?.message || "Login failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -42,6 +59,9 @@ export default function Login() {
                         <h2 className="text-2xl font-bold text-center">Login</h2>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        {generalError && (
+                            <p className="text-red-500 text-center">{generalError}</p>
+                        )}
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <Input
@@ -66,7 +86,9 @@ export default function Login() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-2">
-                        <Button type="submit" className="w-full">Login</Button>
+                        <Button type="submit" className="w-full" disabled={loading}>
+                            {loading ? "Logging in..." : "Login"}
+                        </Button>
                         <Button asChild variant="outline" className="w-full">
                             <Link to="/register">Create an Account</Link>
                         </Button>

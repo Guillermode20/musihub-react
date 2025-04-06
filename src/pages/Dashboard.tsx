@@ -1,24 +1,75 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardContent } from "../components/ui/card";
 import { Avatar } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Table } from "../components/ui/table";
+import { Button } from "../components/ui/button";
+import { authService } from "../lib/appwrite";
 
 export default function Dashboard() {
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const currentUser = await authService.getCurrentUser();
+                if (!currentUser) {
+                    navigate("/login");
+                } else {
+                    setUser(currentUser);
+                }
+            } catch (error) {
+                console.error("Error fetching user:", error);
+                navigate("/login");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, [navigate]);
+
+    const handleLogout = async () => {
+        try {
+            await authService.logout();
+            navigate("/login");
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p>Loading...</p>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return null;
+    }
+
     return (
-        <div className="min-h-screen p-8 bg-gray-50 space-y-8">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="min-h-screen p-8 space-y-8">
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <Button onClick={handleLogout}>Logout</Button>
+            </div>
 
             <div className="flex items-center space-x-4">
                 <Avatar>
                     <img
-                        src="https://via.placeholder.com/40"
+                        src={user.prefs?.avatarUrl || "https://via.placeholder.com/40"}
                         alt="User Avatar"
                         className="rounded-full"
                     />
                 </Avatar>
                 <div>
-                    <p className="font-semibold">John Doe</p>
-                    <p className="text-gray-500">john.doe@example.com</p>
+                    <p className="font-semibold">{user.name || "Unnamed User"}</p>
+                    <p className="text-gray-500">{user.email}</p>
                 </div>
                 <Badge className="ml-4">Active</Badge>
             </div>
