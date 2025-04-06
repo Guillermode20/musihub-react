@@ -1,4 +1,4 @@
-import { ThemeProvider, useTheme } from 'next-themes';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Music, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -74,10 +74,4 @@ function LandingContent() {
     );
 }
 
-export default function Landing() {
-    return (
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <LandingContent />
-        </ThemeProvider>
-    );
-}
+export default LandingContent;
