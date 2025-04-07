@@ -24,19 +24,12 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "../components/ui/dropdown-menu";
-import { User } from "appwrite"; // Import User type for better type safety if available
+import { Models } from "appwrite"; // Import User type for better type safety if available
 
 // Define a more specific User type if possible, based on Appwrite's User model
-interface AppwriteUser extends User {
-    prefs?: {
-        avatarUrl?: string;
-        location?: string;
-        instrument?: string;
-        genre?: string;
-        // Add other potential prefs
-    };
+interface AppwriteUser extends Models.User<Models.Preferences> {
     // Add other fields returned by getCurrentUser if needed
-    registration: number; // Assuming registration is Unix timestamp (seconds)
+    registration: string; // Assuming registration is Unix timestamp (seconds)
 }
 
 
@@ -77,7 +70,7 @@ export default function Dashboard() {
                     if (!currentUser.prefs?.genre) {
                         currentUser.prefs.genre = "Indie Rock";
                     }
-                    if (!currentUser.name) {
+                    if (!currentUser?.name) {
                         currentUser.name = "Alex Turner (Mock)"; // Mock name
                     }
                     if (!currentUser.email) {
@@ -243,7 +236,7 @@ export default function Dashboard() {
                                 Status: {user.status ? 'Active' : 'Inactive'}
                             </Badge>
                             <p className="text-xs text-muted-foreground">
-                                Joined: {new Date(user.registration * 1000).toLocaleDateString()}
+                                Joined: {new Date(Number(user.registration) * 1000).toLocaleDateString()}
                             </p>
                         </div>
                     </CardContent>
