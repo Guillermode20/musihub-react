@@ -3,6 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Sun, Moon, Music, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+/**
+ * Landing page component.
+ * 
+ * Displays the home page with navigation bar, hero section, feature highlights,
+ * and footer. Provides links to register, login, and dashboard.
+ * Includes theme toggle and responsive design.
+ *
+ * @returns {JSX.Element} The landing page UI.
+ */
 function LandingContent() {
     const { theme, setTheme } = useTheme();
 
@@ -45,11 +54,32 @@ function LandingContent() {
                 </p>
                 <div className="mt-10 flex gap-4">
                     <Link to="/register">
-                        <Button size="lg">Join Now</Button>
+                        <Button size="lg" className="bg-primary text-white">Join Now</Button>
                     </Link>
                     <Link to="/login">
-                        <Button variant="outline" size="lg">Log In</Button>
+                        <Button variant="outline" size="lg" className="bg-muted-foreground text-muted-foreground">Log In</Button>
                     </Link>
+                </div>
+            </section>
+
+            {/* Features Section */}
+            <section className="py-24 px-4 bg-muted/30">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center gap-10">
+                    <div className="flex flex-col items-center text-center">
+                        <Music className="h-12 w-12 text-primary mb-4" />
+                        <h3 className="text-2xl font-semibold mb-2">Connect with Musicians</h3>
+                        <p className="text-muted-foreground text-lg">Find and connect with local musicians and bands.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                        <Heart className="h-12 w-12 text-primary mb-4" />
+                        <h3 className="text-2xl font-semibold mb-2">Share Your Sound</h3>
+                        <p className="text-muted-foreground text-lg">Upload your music and share it with the community.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                        <Sun className="h-12 w-12 text-primary mb-4" />
+                        <h3 className="text-2xl font-semibold mb-2">Discover Talent</h3>
+                        <p className="text-muted-foreground text-lg">Browse and discover new talent in your area.</p>
+                    </div>
                 </div>
             </section>
 

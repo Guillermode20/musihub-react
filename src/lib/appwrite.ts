@@ -28,7 +28,13 @@ export const functions = new Functions(client);
 
 // --- Simplified Authentication Service ---
 // Contains core email/password authentication methods
-export const authService = {
+/**
+ * Object-oriented authentication service for Appwrite.
+ *
+ * Provides methods for user registration, login, session management, and logout.
+ * Wraps Appwrite's Account API with simplified async methods.
+ */
+export class AuthService {
     /**
      * Registers a new user account using email and password.
      * @param {string} email - The user's email address.
@@ -39,20 +45,18 @@ export const authService = {
      */
     async register(email: string, password: string, name = '') {
         try {
-            // ID.unique() generates a unique ID for the user, required by Appwrite
             const userId = ID.unique();
             console.log('Generated userId:', userId);
             const userAccount = await account.create(userId, email, password, name);
             console.log('Registration successful:', userAccount);
-            // You might want to automatically log the user in after successful registration:
+            // Optionally auto-login after registration
             // await this.login(email, password);
             return userAccount;
         } catch (error) {
-            console.error('Appwrite service :: register :: error', error);
-            // Re-throw the error to be handled by the calling UI component
+            console.error('AuthService :: register :: error', error);
             throw error;
         }
-    },
+    }
 
     /**
      * Logs in a user with their email and password. Creates a session.
@@ -65,12 +69,11 @@ export const authService = {
         try {
             console.log('Attempting login with email:', email);
             console.log('Type of email:', typeof email);
-            // Creates an email/password session
             const session = await account.createEmailPasswordSession(email, password);
             console.log('Login successful:', session);
             return session;
         } catch (error) {
-            console.error('Appwrite service :: login :: error', error);
+            console.error('AuthService :: login :: error', error);
             if (error instanceof AppwriteException) {
                 console.error('AppwriteException details:', {
                     message: error.message,
@@ -79,32 +82,27 @@ export const authService = {
                     response: error.response,
                 });
             }
-            throw error; // Re-throw for UI handling
+            throw error;
         }
-    },
+    }
 
     /**
      * Checks if a user is currently logged in by attempting to retrieve account details.
-     * This is the standard way to verify an active session.
      * @returns {Promise<Models.User<Models.Preferences> | null>} The user account object if logged in, otherwise null.
      */
     async getCurrentUser() {
         try {
-            // account.get() fetches the details of the user associated with the current session
             const userAccount = await account.get();
-            return userAccount; // User is logged in
+            return userAccount;
         } catch (error) {
-            // Appwrite throws an exception (often 401 Unauthorized) if no active session exists
             if (error instanceof AppwriteException && error.code === 401) {
-                 // This is expected if the user is not logged in, not necessarily an error condition
                 console.log('No active user session found.');
             } else {
-                // Log other unexpected errors
-                console.error('Appwrite service :: getCurrentUser :: error', error);
+                console.error('AuthService :: getCurrentUser :: error', error);
             }
-            return null; // Indicate that no user is currently authenticated
+            return null;
         }
-    },
+    }
 
     /**
      * Logs out the currently authenticated user by deleting their current session.
@@ -113,15 +111,17 @@ export const authService = {
      */
     async logout() {
         try {
-            // 'current' targets the session associated with the current client request
             await account.deleteSession('current');
             console.log('Logout successful');
         } catch (error) {
-            console.error('Appwrite service :: logout :: error', error);
-            throw error; // Re-throw for UI handling if needed
+            console.error('AuthService :: logout :: error', error);
+            throw error;
         }
     }
-};
+}
+
+// Export a singleton instance for use throughout the app
+export const authService = new AuthService();
 
 // --- Default Export ---
 // Export the configured client instance as default (though often you'll import specific services)

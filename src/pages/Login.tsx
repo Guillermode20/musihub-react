@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardFooter } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -6,6 +6,15 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { authService } from "../lib/appwrite";
 
+/**
+ * Login page component.
+ * 
+ * Renders a login form with email and password fields, performs validation,
+ * and authenticates the user using authService. Redirects to dashboard on success.
+ * Displays error messages for invalid input or failed login attempts.
+ *
+ * @returns {JSX.Element} The login form UI.
+ */
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -13,6 +22,21 @@ export default function Login() {
     const [generalError, setGeneralError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const user = await authService.getCurrentUser();
+                if (user) {
+                    navigate("/dashboard");
+                }
+            } catch (error) {
+                console.error("Error checking session:", error);
+                // Fail silently, stay on login page
+            }
+        };
+        checkSession();
+    }, [navigate]);
 
     const validateEmail = (email: string) => {
         const emailRegex = /\S+@\S+\.\S+/;

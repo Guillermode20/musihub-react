@@ -6,6 +6,15 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { authService } from "../lib/appwrite";
 
+/**
+ * Register page component.
+ * 
+ * Renders a user registration form with name, email, password, and confirm password fields.
+ * Validates input, creates a new user account via authService, and redirects to login on success.
+ * Displays validation and server error messages.
+ *
+ * @returns {JSX.Element} The registration form UI.
+ */
 export default function Register() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");

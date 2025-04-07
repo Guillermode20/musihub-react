@@ -1,5 +1,6 @@
 /* Ensure Tailwind directives/imports are present */
 @import "tailwindcss";
+@import "tw-animate-css";
 /* @import "tw-animate-css"; /* Optional: if you use this library */
 
 /* Your Custom CSS Theme */
@@ -11,7 +12,7 @@
   --neobrutal-shadow: 4px 4px 0px var(--foreground);
   --neobrutal-radius: 0;
   --neobrutal-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   --background: oklch(0.99 0.01 95.10);
   --foreground: oklch(0.34 0.03 95.72);
   --card: oklch(0.99 0.01 95.10);
@@ -230,3 +231,12 @@
 }
 
 /* Add custom component styles or utilities here if needed */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
