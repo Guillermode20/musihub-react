@@ -1,19 +1,20 @@
+import { useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
 import { Sun, Moon, Music, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { isLoggedIn } from '../lib/pocketbase';
 
-/**
- * Landing page component.
- * 
- * Displays the home page with navigation bar, hero section, feature highlights,
- * and footer. Provides links to register, login, and dashboard.
- * Includes theme toggle and responsive design.
- *
- * @returns {JSX.Element} The landing page UI.
- */
 function LandingContent() {
     const { theme, setTheme } = useTheme();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // If user is already logged in, redirect to dashboard
+        if (isLoggedIn()) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background text-foreground">
@@ -23,14 +24,18 @@ function LandingContent() {
                     <Music className="h-6 w-6 text-primary" />
                     <h1 className="text-xl font-semibold tracking-tight">MusiHub</h1>
                 </div>
-                {/* Simplified Nav for a warmer feel */}
                 <nav className="hidden md:flex items-center gap-6 ml-8">
-                    <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Dashboard</Link>
-                    <Link to="/register" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Register</Link>
+                    <Link to="/register" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                        Register
+                    </Link>
                 </nav>
                 <div className="ml-auto flex items-center gap-3">
-                    <Button variant="ghost" size="sm">Log In</Button>
-                    <Button size="sm">Join the Community</Button>
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link to="/login">Log In</Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                        <Link to="/register">Join the Community</Link>
+                    </Button>
                     <Button
                         variant="ghost"
                         size="icon"
@@ -54,10 +59,10 @@ function LandingContent() {
                 </p>
                 <div className="mt-10 flex gap-4">
                     <Link to="/register">
-                        <Button size="lg" className="bg-primary text-white">Join Now</Button>
+                        <Button size="lg" className="bg-primary text-primary-foreground">Join Now</Button>
                     </Link>
                     <Link to="/login">
-                        <Button variant="outline" size="lg" className="bg-muted-foreground text-muted-foreground">Log In</Button>
+                        <Button variant="outline" size="lg">Log In</Button>
                     </Link>
                 </div>
             </section>
