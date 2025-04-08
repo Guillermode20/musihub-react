@@ -29,7 +29,8 @@ export default function Dashboard() {
 
 
     const handleLogout = async () => {
-        // Logout disabled - no action
+        await logout();
+        window.location.href = '/login';
     };
 
 
@@ -96,4 +97,8 @@ export default function Dashboard() {
             </div>
         </SidebarProvider >
     );
+}
+
+function logout() {
+    throw new Error("Function not implemented.");
 }
