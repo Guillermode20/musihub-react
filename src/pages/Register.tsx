@@ -1,10 +1,10 @@
+import pb from '../lib/pocketbase';
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardFooter } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { authService } from "../lib/appwrite";
 
 /**
  * Register page component.
@@ -25,40 +25,41 @@ export default function Register() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const validateEmail = (email: string) => {
-        return /\S+@\S+\.\S+/.test(email);
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         setGeneralError(null);
-        const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
-
-        if (!validateEmail(email)) {
-            newErrors.email = "Please enter a valid email address.";
-        }
-
-        if (password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters.";
-        }
+        setErrors({});
 
         if (password !== confirmPassword) {
-            newErrors.confirmPassword = "Passwords do not match.";
+            setErrors({ confirmPassword: "Passwords do not match" });
+            setLoading(false);
+            return;
         }
 
-        setErrors(newErrors);
+        try {
+            const userData = {
+                email,
+                password,
+                passwordConfirm: confirmPassword,
+                name,
+            };
+            const createdUser = await pb.collection('users').create(userData);
+            console.log('Registration success:', createdUser);
 
-        if (Object.keys(newErrors).length === 0) {
-            setLoading(true);
-            try {
-                await authService.register(email, password, name);
-                navigate("/login");
-            } catch (error: any) {
-                console.error("Registration error:", error);
-                setGeneralError(error?.message || "Registration failed. Please try again.");
-            } finally {
-                setLoading(false);
+            // Auto-login after registration
+            await pb.collection('users').authWithPassword(email, password);
+            navigate("/dashboard");
+        } catch (error: any) {
+            console.error('Registration error:', error);
+            if (error?.response?.data) {
+                setErrors(error.response.data);
+            } else {
+                setGeneralError("Registration failed. Please try again.");
             }
+        } finally {
+            setLoading(false);
         }
     };
 

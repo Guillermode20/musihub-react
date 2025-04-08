@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import pb from '../lib/pocketbase';
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardContent, CardFooter } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { authService } from "../lib/appwrite";
 
 /**
  * Login page component.
@@ -23,55 +23,37 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const checkSession = async () => {
-            try {
-                const user = await authService.getCurrentUser();
-                if (user) {
-                    navigate("/dashboard");
-                }
-            } catch (error) {
-                console.error("Error checking session:", error);
-                // Fail silently, stay on login page
-            }
-        };
-        checkSession();
-    }, [navigate]);
-
-    const validateEmail = (email: string) => {
-        const emailRegex = /\S+@\S+\.\S+/;
-        const isValidFormat = emailRegex.test(email);
-        const isValidLength = email.length <= 36;
-        const startsWithSpecialChar = /^[^a-zA-Z0-9]/.test(email);
-        return isValidFormat && isValidLength && !startsWithSpecialChar;
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         setGeneralError(null);
-        const newErrors: { email?: string; password?: string } = {};
+        setErrors({});
 
-        if (!validateEmail(email)) {
-            newErrors.email = "Please enter a valid email address.";
-        }
+        try {
+            const authData = await pb.collection('users').authWithPassword(email, password);
+            console.log('Login success:', authData);
 
-        if (password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters.";
-        }
+            // Fetch user record for additional validation
+            const userId = authData.record.id;
+            const userRecord = await pb.collection('users').getOne(userId);
 
-        setErrors(newErrors);
-
-        if (Object.keys(newErrors).length === 0) {
-            setLoading(true);
-            try {
-                await authService.login(email, password);
-                navigate("/dashboard");
-            } catch (error: any) {
-                console.error("Login error:", error);
-                setGeneralError(error?.message || "Login failed. Please try again.");
-            } finally {
-                setLoading(false);
+            // Example: check if user is active (assuming 'isActive' boolean field exists)
+            if (userRecord.isActive === false) {
+                setGeneralError("Your account is inactive. Please contact support.");
+                await pb.authStore.clear();
+                return;
             }
+
+            navigate("/dashboard");
+        } catch (error: any) {
+            console.error('Login error:', error);
+            if (error?.response?.data) {
+                setErrors(error.response.data);
+            } else {
+                setGeneralError("Login failed. Please check your credentials.");
+            }
+        } finally {
+            setLoading(false);
         }
     };
 

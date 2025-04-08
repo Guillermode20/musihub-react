@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Avatar } from "../components/ui/avatar";
-import { authService } from "../lib/appwrite";
 import { DashboardContent } from "../components/Dashboard/DashboardContent";
 import {
     SidebarProvider,
@@ -21,50 +19,19 @@ import {
 } from "../components/ui/dropdown-menu";
 
 export default function Dashboard() {
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    const [user] = useState<any>({
+        name: "User",
+        email: "user@example.com",
+        prefs: { avatarUrl: "" }
+    });
+    const [] = useState(false);
     const [currentView, setCurrentView] = useState<'dashboard' | 'network'>('dashboard');
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const currentUser = await authService.getCurrentUser();
-                if (!currentUser) {
-                    navigate("/login");
-                } else {
-                    setUser(currentUser);
-                }
-            } catch (error) {
-                console.error("Error fetching user:", error);
-                navigate("/login");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchUser();
-    }, [navigate]);
 
     const handleLogout = async () => {
-        try {
-            await authService.logout();
-            navigate("/login");
-        } catch (error) {
-            console.error("Logout error:", error);
-        }
+        // Logout disabled - no action
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p className="text-lg text-muted-foreground">Loading...</p>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return null;
-    }
 
     return (
         <SidebarProvider>
