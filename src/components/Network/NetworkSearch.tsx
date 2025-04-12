@@ -1,7 +1,30 @@
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import useDebounce from "../../hooks/useDebounce";
+import { getProfilebyName } from "../../lib/pocketbase";
+import { useState, useEffect } from "react";
+import { ProfileCard } from "./ProfileCard";
 
 export function NetworkSearch() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    const [profile, setProfile] = useState<any>(null);
+
+    const handleSearch = async (term: string) => {
+        if (term) {
+            const profile = await getProfilebyName(term);
+            console.log("Search Results:", profile);
+            setProfile(profile);
+        }
+    };
+
+    useEffect(() => {
+        if (debouncedSearchTerm) {
+            handleSearch(debouncedSearchTerm);
+        } else {
+            setProfile(null);
+        }
+    }, [debouncedSearchTerm]);
+
     return (
         <div className="space-y-6">
             <div className="space-y-2">
@@ -14,12 +37,15 @@ export function NetworkSearch() {
                     type="search"
                     placeholder="Search by name, skills, or location..."
                     className="flex-1"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <Button>Search</Button>
             </div>
 
             <div className="py-8 text-center text-muted-foreground">
-                Search functionality coming soon...
+                {profile ? (
+                    <ProfileCard profile={profile} />
+                ) : null}
             </div>
         </div>
     );

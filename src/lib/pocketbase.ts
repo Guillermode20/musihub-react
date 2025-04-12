@@ -47,3 +47,8 @@ export function onAuthStateChange(callback: (isLoggedIn: boolean) => void) {
         callback(!!token);
     });
 }
+
+export async function getProfilebyName(name: string) {
+    const profile = await pb.collection('profiles').getFirstListItem(`name~"${name}"`);
+    return profile;
+}
