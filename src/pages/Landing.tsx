@@ -3,7 +3,7 @@ import { useTheme } from 'next-themes';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Sun, Moon, Music, Heart } from 'lucide-react';
-import { isLoggedIn } from '../lib/pocketbase';
+import { pocketbaseService } from '../lib/pocketbase';
 
 function LandingContent() {
     const { theme, setTheme } = useTheme();
@@ -11,7 +11,7 @@ function LandingContent() {
 
     useEffect(() => {
         // If user is already logged in, redirect to dashboard
-        if (isLoggedIn()) {
+        if (pocketbaseService.isLoggedIn()) {
             navigate('/dashboard');
         }
     }, [navigate]);

@@ -19,11 +19,11 @@ import {
     DropdownMenuItem,
 } from "../components/ui/dropdown-menu";
 
-import { getCurrentUser, logout, type User, onAuthStateChange } from "../lib/pocketbase";
+import { pocketbaseService, type User } from "../lib/pocketbase";
 
 export default function Dashboard() {
     const navigate = useNavigate();
-    const [user, setUser] = useState<User | null>(getCurrentUser());
+    const [user, setUser] = useState<User | null>(pocketbaseService.getCurrentUser());
     const [currentView, setCurrentView] = useState<'dashboard' | 'network'>('dashboard');
 
     useEffect(() => {
@@ -34,12 +34,12 @@ export default function Dashboard() {
         }
 
         // Listen for auth state changes
-        const unsubscribe = onAuthStateChange((isLoggedIn) => {
+        const unsubscribe = pocketbaseService.onAuthStateChange((isLoggedIn) => {
             if (!isLoggedIn) {
                 setUser(null);
                 navigate('/login');
             } else {
-                setUser(getCurrentUser());
+                setUser(pocketbaseService.getCurrentUser());
             }
         });
 
@@ -50,7 +50,7 @@ export default function Dashboard() {
 
     const handleLogout = async () => {
         try {
-            await logout();
+            await pocketbaseService.logout();
             setUser(null);
             navigate('/login');
         } catch (error) {

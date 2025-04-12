@@ -4,6 +4,7 @@ package main
 // go run . serve
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/pocketbase/pocketbase"
@@ -11,12 +12,10 @@ import (
 )
 
 func createUserProfile(e *core.RecordEvent) error {
-	app := pocketbase.New()
 	// Find the "profiles" collection.
-	collection, err := app.FindCollectionByNameOrId("profiles")
+	collection, err := e.App.FindCollectionByNameOrId("profiles")
 	if err != nil {
-		log.Printf("profiles collection not found: %v", err)
-		return e.Next()
+		return fmt.Errorf("failed to find profiles collection: %w", err)
 	}
 
 	// Create a new record for the "profiles" collection.
@@ -27,12 +26,10 @@ func createUserProfile(e *core.RecordEvent) error {
 	profile.Set("location", "This is a default location.") 
 	profile.Set("bio", "This is a default bio.") 
 	profile.Set("profilePicture", "https://example.com/default-profile-picture.png") 
-	profile.Set("createdAt", e.Record.Collection().Created) 
-	profile.Set("updatedAt", e.Record.Collection().Updated) 
 
 	// Save the new profile record.
-	if err := app.Save(profile); err != nil {
-		log.Printf("failed to save profile for user %s: %v", e.Record.Id, err)
+	if err := e.App.Save(profile); err != nil {
+		return fmt.Errorf("failed to save profile for user %s: %w", e.Record.Id, err)
 	}
 
 	return e.Next()

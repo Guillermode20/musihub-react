@@ -1,6 +1,6 @@
 import { Input } from "../ui/input";
 import useDebounce from "../../hooks/useDebounce";
-import { getProfilebyName } from "../../lib/pocketbase";
+import { pocketbaseService } from "../../lib/pocketbase";
 import { useState, useEffect } from "react";
 import { ProfileCard } from "./ProfileCard";
 
@@ -11,7 +11,7 @@ export function NetworkSearch() {
 
     const handleSearch = async (term: string) => {
         if (term) {
-            const profile = await getProfilebyName(term);
+            const profile = await pocketbaseService.getProfilebyName(term);
             console.log("Search Results:", profile);
             setProfile(profile);
         }

@@ -4,7 +4,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "../components/ui/card
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { login } from "../lib/pocketbase";
+import { pocketbaseService } from "../lib/pocketbase";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            await login(email, password);
+            await pocketbaseService.login(email, password);
             navigate("/dashboard");
         } catch (err) {
             setError("Invalid email or password");

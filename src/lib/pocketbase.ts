@@ -1,7 +1,7 @@
 import PocketBase, { type RecordModel } from 'pocketbase';
 
-// Create PocketBase instance
-export const pb = new PocketBase('http://localhost:8090');
+// Base URL configuration
+const POCKETBASE_URL = 'http://localhost:8090';
 
 // User type based on PocketBase auth response
 export interface User extends RecordModel {
@@ -10,45 +10,62 @@ export interface User extends RecordModel {
     avatar?: string;
 }
 
-// Auth functions
-export async function register(name: string, email: string, password: string, passwordConfirm: string) {
-    const data = await pb.collection('users').create({
-        email,
-        password,
-        passwordConfirm,
-        name,
-    });
-    
-    await login(email, password);
-    return data;
+// API Service class that encapsulates all PocketBase operations
+class PocketBaseService {
+    private static instance: PocketBaseService;
+    private client: PocketBase;
+
+    private constructor() {
+        this.client = new PocketBase(POCKETBASE_URL);
+    }
+
+    public static getInstance(): PocketBaseService {
+        if (!PocketBaseService.instance) {
+            PocketBaseService.instance = new PocketBaseService();
+        }
+        return PocketBaseService.instance;
+    }
+
+    // Auth functions
+    public async register(name: string, email: string, password: string, passwordConfirm: string) {
+        const data = await this.client.collection('users').create({
+            email,
+            password,
+            passwordConfirm,
+            name,
+        });
+        
+        await this.login(email, password);
+        return data;
+    }
+
+    public async login(email: string, password: string) {
+        return await this.client.collection('users').authWithPassword(email, password);
+    }
+
+    public async logout() {
+        this.client.authStore.clear();
+    }
+
+    public getCurrentUser(): User | null {
+        return this.client.authStore.model as User | null;
+    }
+
+    public isLoggedIn(): boolean {
+        return this.client.authStore.isValid;
+    }
+
+    public onAuthStateChange(callback: (isLoggedIn: boolean) => void) {
+        return this.client.authStore.onChange((token) => {
+            callback(!!token);
+        });
+    }
+
+    public async getProfilebyName(name: string) {
+        const profile = await this.client.collection('profiles').getFirstListItem(`name~"${name}"`);
+        return profile;
+    }
 }
 
-export async function login(email: string, password: string) {
-    return await pb.collection('users').authWithPassword(email, password);
-}
-
-export async function logout() {
-    pb.authStore.clear();
-}
-
-// Get current user data
-export function getCurrentUser() {
-    return pb.authStore.model as User | null;
-}
-
-// Check if user is authenticated
-export function isLoggedIn() {
-    return pb.authStore.isValid;
-}
-
-// Listen to auth state changes
-export function onAuthStateChange(callback: (isLoggedIn: boolean) => void) {
-    return pb.authStore.onChange((token) => {
-        callback(!!token);
-    });
-}
-
-export async function getProfilebyName(name: string) {
-    const profile = await pb.collection('profiles').getFirstListItem(`name~"${name}"`);
-    return profile;
-}
+// Export a singleton instance of the service
+export const pocketbaseService = PocketBaseService.getInstance();
