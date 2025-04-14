@@ -5,7 +5,6 @@ import { NetworkSearch, NetworkMessages, NetworkForum } from ".";
 export function Network() {
     return (
         <div className="w-full p-6 space-y-6">
-            <h1 className="text-3xl font-bold">Network</h1>
 
             <Tabs defaultValue="search" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">

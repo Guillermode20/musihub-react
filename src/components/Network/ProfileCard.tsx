@@ -13,7 +13,13 @@ interface ProfileCardProps {
 
 export function ProfileCard({ profile }: ProfileCardProps) {
     if (!profile) {
-        return <div className="text-muted-foreground text-center">No profile found.</div>;
+        return (
+            <div className="text-muted-foreground text-center p-4 border rounded-lg">
+                <p>No profile found.</p>
+                <p className="text-sm mt-2">Profile data is null or undefined</p>
+                <p className="text-sm">Expected Profile type with properties: id, name, email, bio, location, userId</p>
+            </div>
+        );
     }
 
     return (
