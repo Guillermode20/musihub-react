@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 server\pocketbase_docs_llm
+.qodo

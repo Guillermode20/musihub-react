@@ -10,6 +10,7 @@ import {
     SidebarMenu,
     SidebarMenuItem,
     SidebarMenuButton,
+    SidebarInset,
 } from "../components/ui/sidebar";
 
 import {
@@ -20,6 +21,8 @@ import {
 } from "../components/ui/dropdown-menu";
 
 import { pocketbaseService, type User } from "../lib/pocketbase";
+import { DashboardHeader } from "../components/Dashboard/DashboardHeader";
+import { Network } from "../components/Network/Network";
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -121,7 +124,18 @@ export default function Dashboard() {
                         </DropdownMenu>
                     </div>
                 </Sidebar>
-                <DashboardContent user={user} onLogout={handleLogout} currentView={currentView} />
+                <SidebarInset className="min-h-screen bg-background/95">
+                    <div className="w-full py-6 space-y-8">
+                        <DashboardHeader user={user} onLogout={handleLogout} currentView={currentView} />
+                        <div className="px-4">
+                            {currentView === 'dashboard' ? (
+                                <DashboardContent user={user} />
+                            ) : (
+                                <Network />
+                            )}
+                        </div>
+                    </div>
+                </SidebarInset>
             </div>
         </SidebarProvider>
     );
